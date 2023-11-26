@@ -1,3 +1,4 @@
-src/app/code/core/Mage/Sitemap/             app/code/core/Mage/Sitemap/
-src/app/etc/modules/Mage_Sitemap.xml        app/etc/modules/Mage_Sitemap.xml
-src/app/locale/en_US/Mage_Sitemap.csv       app/locale/en_US/Mage_Sitemap.csv
+src/app/code/core/Mage/Sitemap/                                         app/code/core/Mage/Sitemap/
+src/app/etc/modules/Mage_Sitemap.xml                                    app/etc/modules/Mage_Sitemap.xml
+src/app/locale/en_US/Mage_Sitemap.csv                                   app/locale/en_US/Mage_Sitemap.csv
+src/app/locale/en_US/template/email/sitemap_generate_warning.html       app/locale/en_US/template/email/sitemap_generate_warning.html
