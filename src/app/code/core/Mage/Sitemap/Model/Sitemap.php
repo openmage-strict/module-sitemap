@@ -58,23 +58,23 @@ class Mage_Sitemap_Model_Sitemap extends Mage_Core_Model_Abstract
      */
     protected function _beforeSave()
     {
-        $io = new Varien_Io_File();
-        $realPath = $io->getCleanPath(Mage::getBaseDir() . '/' . $this->getSitemapPath());
+        $file = new Varien_Io_File();
+        $realPath = $file->getCleanPath(Mage::getBaseDir() . '/' . $this->getSitemapPath());
 
         /**
          * Check path is allow
          */
-        if (!$io->allowedPath($realPath, Mage::getBaseDir())) {
+        if (!$file->allowedPath($realPath, Mage::getBaseDir())) {
             Mage::throwException(Mage::helper('sitemap')->__('Please define correct path'));
         }
         /**
          * Check exists and writeable path
          */
-        if (!$io->fileExists($realPath, false)) {
+        if (!$file->fileExists($realPath, false)) {
             Mage::throwException(Mage::helper('sitemap')->__('Please create the specified folder "%s" before saving the sitemap.', Mage::helper('core')->escapeHtml($this->getSitemapPath())));
         }
 
-        if (!$io->isWriteable($realPath)) {
+        if (!$file->isWriteable($realPath)) {
             Mage::throwException(Mage::helper('sitemap')->__('Please make sure that "%s" is writable by web-server.', $this->getSitemapPath()));
         }
         /**
@@ -121,21 +121,24 @@ class Mage_Sitemap_Model_Sitemap extends Mage_Core_Model_Abstract
      *
      * @return $this
      * @throws Throwable
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function generateXml()
     {
-        $io = new Varien_Io_File();
-        $io->setAllowCreateFolders(true);
-        $io->open(['path' => $this->getPath()]);
+        $file = new Varien_Io_File();
+        $file->setAllowCreateFolders(true);
+        $file->open(['path' => $this->getPath()]);
 
-        if ($io->fileExists($this->getSitemapFilename()) && !$io->isWriteable($this->getSitemapFilename())) {
+        if ($file->fileExists($this->getSitemapFilename()) && !$file->isWriteable($this->getSitemapFilename())) {
             Mage::throwException(Mage::helper('sitemap')->__('File "%s" cannot be saved. Please, make sure the directory "%s" is writeable by web server.', $this->getSitemapFilename(), $this->getPath()));
         }
 
-        $io->streamOpen($this->getSitemapFilename());
+        $file->streamOpen($this->getSitemapFilename());
 
-        $io->streamWrite('<?xml version="1.0" encoding="UTF-8"?>' . "\n");
-        $io->streamWrite('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+        $file->streamWrite('<?xml version="1.0" encoding="UTF-8"?>' . "\n");
+        $file->streamWrite('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
 
         $storeId = $this->getStoreId();
         $date    = Mage::getSingleton('core/date')->gmtDate('Y-m-d');
@@ -156,7 +159,7 @@ class Mage_Sitemap_Model_Sitemap extends Mage_Core_Model_Abstract
         ]);
         foreach ($categories->getItems() as $item) {
             $xml = $this->getSitemapRow($baseUrl . $item->getUrl(), $lastmod, $changefreq, $priority);
-            $io->streamWrite($xml);
+            $file->streamWrite($xml);
         }
         unset($collection);
 
@@ -175,7 +178,7 @@ class Mage_Sitemap_Model_Sitemap extends Mage_Core_Model_Abstract
         ]);
         foreach ($products->getItems() as $item) {
             $xml = $this->getSitemapRow($baseUrl . $item->getUrl(), $lastmod, $changefreq, $priority);
-            $io->streamWrite($xml);
+            $file->streamWrite($xml);
         }
         unset($collection);
 
@@ -200,19 +203,19 @@ class Mage_Sitemap_Model_Sitemap extends Mage_Core_Model_Abstract
             }
 
             $xml = $this->getSitemapRow($baseUrl . $url, $lastmod, $changefreq, $priority);
-            $io->streamWrite($xml);
+            $file->streamWrite($xml);
         }
         unset($collection);
 
         Mage::dispatchEvent('sitemap_urlset_generating_before', [
-            'file'      => $io ,
+            'file'      => $file ,
             'base_url'  => $baseUrl ,
             'date'      => $date,
             'store_id'  => $storeId
         ]);
 
-        $io->streamWrite('</urlset>');
-        $io->streamClose();
+        $file->streamWrite('</urlset>');
+        $file->streamClose();
 
         $this->setSitemapTime(
             Mage::getSingleton('core/date')->gmtDate(Varien_Db_Adapter_Pdo_Mysql::TIMESTAMP_FORMAT)
